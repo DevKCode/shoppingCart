@@ -3,7 +3,6 @@
 use Shopping\Product;
 
 
-
 class Cart
 {
     /**
@@ -16,11 +15,13 @@ class Cart
     public function addProduct(Product $product): bool
     {
         if($this->isExists($product)){
+
              $existingProduct = $this->getProductById($product->getUniqueId());
              $existingProduct->setQuantity(1);
         }else{
+
             $product->setQuantity(1);
-            $_SESSION['carttt'][$product->getUniqueId()] = $product;
+            $_SESSION['shopp'][$product->getUniqueId()] = $product;
         }
         return true;
 
@@ -33,7 +34,7 @@ class Cart
      */
     public function viewProduct(): array
     {
-       return $_SESSION['carttt'];
+       return $_SESSION['shopp'];
     }
 
     /**
@@ -46,7 +47,7 @@ class Cart
     public function removeProduct(Product $product): bool
     {
         if ($this->isExists($product)) {
-            unset( $_SESSION['carttt'][$product->getUniqueId()]);
+            unset( $_SESSION['shopp'][$product->getUniqueId()]);
             return true;
         } else {
             return false;
@@ -60,9 +61,14 @@ class Cart
      *
      * @return bool
      */
-     public function isExists(Product $product): bool {
+    public function isExists(Product $product): bool
+    {
         $id = $product->getUniqueId();
-        return array_key_exists($id,  $_SESSION['carttt']);
+        if (isset($_SESSION['shopp']) && !empty($_SESSION['shopp'])) {
+            return array_key_exists($id, $_SESSION['shopp']);
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -73,6 +79,6 @@ class Cart
      * @return Product
      */
     public function getProductById(string $id): Product{
-         return $_SESSION['carttt'][$id];
+         return $_SESSION['shopp'][$id];
     }
 }

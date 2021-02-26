@@ -3,11 +3,12 @@
 require_once "./Controller/ShoppingCartController.php";
 require_once "./Model/Product.php";
 require_once "./Model/Cart.php";
-error_reporting(E_ALL);
+error_reporting(E_STRICT);
+
 session_start();
 //check if the session exists, if exists then assign
-if (isset($_SESSION['carttt'])) {
-    $_SESSION['carttt'] = $_SESSION['carttt'];
+if (isset($_SESSION['shopp'])) {
+    $_SESSION['shopp'] = $_SESSION['shopp'];
 }
 $shoppingCart = new ShoppingCartController();
 $productList = $shoppingCart->viewProductList();
