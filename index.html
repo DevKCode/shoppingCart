@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script type="text/javascript" src="resources/jquery-3.5.1.min.js"/>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous"></script>
+</head>
+<body class="container-fluid p-3">
+<h2>Shopping list</h2>
+<div class="row">
+    <!-- Product List Section -->
+    <div class="col-8">
+        <ul class="list-group" id="productList">
+        </ul>
+    </div>
+    <!-- Shopping cart List section -->
+    <div class="col-4 bg-info ">
+        <section>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Qty</th>
+                    <th scope="col">Total</th>
+                    <th scope="col">Remove</th>
+                </tr>
+                </thead>
+                <tfoot>
+                <tr>
+                    <th colspan="3">Total</th>
+                    <th><span id="total"></span></th>
+                </tr>
+                </tfoot>
+                <tbody id="cartList">
+                </tbody>
+            </table>
+        </section>
+    </div>
+</div>
+<script>
+    // product list
+    let productList;
+    // shopping card list
+    let shoppingCardList;
+    // load initial functions
+    $(function () {
+        // product listing function
+        createList();
+        // shopping card listing function
+        loadShoppingCart();
+
+    });
+
+    /**
+     *  method to create the product list from json data
+     */
+    function createList() {
+        const listContainer = $('#productList');
+        let url = {load_product: 'load_product'};
+        loadData(url).then(data => {
+            if (data) {
+                productList = data;
+                productList.forEach((product, index) => {
+                    listContainer.prepend('<li style="" class="list-group-item">' + `${product['name']} - ${product['price']}      ` + '<button class="btn btn-sm btn-primary" onclick=addProduct(' + index + ')>Add</button></li>')
+
+                })
+            }
+        })
+    }
+
+    /**
+     * method to create the shopping cart list and calculation values
+     *
+     */
+    function loadShoppingCart() {
+        // Remove the existing child nodes for fresh update
+        $('#cartList').empty();
+        // cartList div selection
+        const listContainer = $('#cartList');
+        let total = 0;
+        // url to fetch shopping cart data
+        let url = {load_cart: 'load_cart'};
+        loadData(url).then(data => {
+            if (data) {
+                // convert object to array list
+                let cartList = Object.values(data);
+                shoppingCardList = cartList;
+                cartList.forEach((cart, index) => {
+                    // price & sub price total calculation
+                    let subtotal = Number(cart['price']) * Number(cart['quantity']);
+                    total += subtotal;
+                    // construct the table row for each record
+                    listContainer.prepend('<tr>' +
+                        '<td>' + `${cart['name']}` + '</td>' +
+                        '<td>' + `${cart['price']}` + '</td>' +
+                        '<td>' + `${cart['quantity']}` + '</td>' +
+                        '<td>' + `${subtotal.toFixed(2)}` + '</td>' +
+                        '<td><button class="btn btn-sm btn-info" onclick="removeProduct(' + index + ')">Remove</button></td>' +
+                        '</tr>');
+                })
+            }
+            $('#total').text(total.toFixed(2));
+        })
+    }
+
+    /**
+     * Common util function for api call
+     *
+     * @param {{load_product: string}} datUrl for function call
+     */
+    function loadData(datUrl) {
+        return $.ajax({
+            type: 'POST',
+            data: datUrl,
+            url: 'route.php',
+            dataType: "json",
+            async: false,
+        });
+    }
+
+    /**
+     *  method to send api request to add a product
+     *
+     * @param productIndex - product index  number
+     */
+    function addProduct(productIndex) {
+        let url = {add_cart: productList[productIndex]['uniqueId']};
+        loadData(url).then(data => {
+            loadShoppingCart();
+        })
+    }
+
+    /**
+     * method to send api request to remove a product
+     *
+     * @param shoppingCartIndex - shopping product index number
+     */
+    function removeProduct(shoppingCartIndex) {
+        let url = {remove_cart: shoppingCardList[shoppingCartIndex]['uniqueId']};
+        loadData(url).then(data => {
+            loadShoppingCart();
+        })
+    }
+</script>
+</body>
+</html>
